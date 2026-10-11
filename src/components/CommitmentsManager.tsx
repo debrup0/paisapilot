@@ -101,24 +101,26 @@ export const CommitmentsManager: React.FC<CommitmentsManagerProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
             <div className="sm:col-span-5">
-              <label className="block text-[11px] font-medium text-slate-400 mb-1">
+              <label htmlFor="commitment-title" className="block text-[11px] font-medium text-slate-300 mb-1">
                 Name (e.g. Wi-Fi bill, Gym pass, Netflix)
               </label>
               <input
+                id="commitment-title"
                 type="text"
                 required
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
                 placeholder="Hostel Wi-Fi"
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-lime-400"
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-lime-400 focus-visible:ring-2 focus-visible:ring-lime-400"
               />
             </div>
 
             <div className="sm:col-span-3">
-              <label className="block text-[11px] font-medium text-slate-400 mb-1">
+              <label htmlFor="commitment-amount" className="block text-[11px] font-medium text-slate-300 mb-1">
                 Amount (₹ INR)
               </label>
               <input
+                id="commitment-amount"
                 type="number"
                 required
                 min="1"
@@ -126,33 +128,35 @@ export const CommitmentsManager: React.FC<CommitmentsManagerProps> = ({
                 value={newAmount}
                 onChange={(e) => setNewAmount(e.target.value)}
                 placeholder="400"
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white font-mono tabular-nums focus:outline-none focus:border-lime-400"
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white font-mono tabular-nums focus:outline-none focus:border-lime-400 focus-visible:ring-2 focus-visible:ring-lime-400"
               />
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block text-[11px] font-medium text-slate-400 mb-1">
+              <label htmlFor="commitment-due-day" className="block text-[11px] font-medium text-slate-300 mb-1">
                 Due Day (1-30)
               </label>
               <input
+                id="commitment-due-day"
                 type="number"
                 required
                 min="1"
                 max="30"
                 value={newDueDay}
                 onChange={(e) => setNewDueDay(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white font-mono tabular-nums focus:outline-none focus:border-lime-400"
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white font-mono tabular-nums focus:outline-none focus:border-lime-400 focus-visible:ring-2 focus-visible:ring-lime-400"
               />
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block text-[11px] font-medium text-slate-400 mb-1">
+              <label htmlFor="commitment-category" className="block text-[11px] font-medium text-slate-300 mb-1">
                 Category
               </label>
               <select
+                id="commitment-category"
                 value={newCategory}
                 onChange={(e) => setNewCategory(e.target.value as CategoryId)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-2 text-sm text-white focus:outline-none focus:border-lime-400"
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-2 text-sm text-white focus:outline-none focus:border-lime-400 focus-visible:ring-2 focus-visible:ring-lime-400"
               >
                 {Object.values(CATEGORIES).map((c) => (
                   <option key={c.id} value={c.id}>
@@ -164,19 +168,20 @@ export const CommitmentsManager: React.FC<CommitmentsManagerProps> = ({
           </div>
 
           <div className="flex items-center justify-between pt-2">
-            <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-400">
+            <label htmlFor="commitment-recurring" className="flex items-center gap-2 cursor-pointer text-xs text-slate-300">
               <input
+                id="commitment-recurring"
                 type="checkbox"
                 checked={newRecurring}
                 onChange={(e) => setNewRecurring(e.target.checked)}
-                className="w-4 h-4 rounded border-slate-700 bg-slate-950 text-lime-400 focus:ring-0"
+                className="w-4 h-4 rounded border-slate-700 bg-slate-950 text-lime-400 focus:ring-0 focus-visible:ring-2 focus-visible:ring-lime-400"
               />
               <span>Recurring monthly commitment</span>
             </label>
 
             <button
               type="submit"
-              className="px-4 py-2 text-xs font-bold text-slate-950 bg-lime-400 hover:bg-lime-300 rounded-lg transition-colors"
+              className="px-4 py-2 text-xs font-bold text-slate-950 bg-lime-400 hover:bg-lime-300 rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-lime-400 focus-visible:outline-none"
             >
               Save Commitment
             </button>
@@ -192,9 +197,9 @@ export const CommitmentsManager: React.FC<CommitmentsManagerProps> = ({
 
         {pendingCommitments.length === 0 ? (
           <div className="p-8 text-center rounded-2xl bg-slate-900/40 border border-slate-800">
-            <CheckCircle className="w-8 h-8 text-slate-600 mx-auto mb-2" />
+            <CheckCircle className="w-8 h-8 text-slate-500 mx-auto mb-2" aria-hidden="true" />
             <p className="text-sm font-medium text-white">No pending commitments</p>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-slate-400 mt-1">
               All planned subscriptions and bills for this 30-day cycle are settled.
             </p>
           </div>
@@ -222,6 +227,7 @@ export const CommitmentsManager: React.FC<CommitmentsManagerProps> = ({
                         <span
                           className="w-2.5 h-2.5 rounded-full"
                           style={{ backgroundColor: cat.color }}
+                          aria-hidden="true"
                         />
                         <h5 className="text-sm font-bold text-white tracking-tight">
                           {com.title}
@@ -231,7 +237,7 @@ export const CommitmentsManager: React.FC<CommitmentsManagerProps> = ({
                         <span>{cat.label}</span>
                         <span aria-hidden="true">·</span>
                         <span className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3 text-slate-500" />
+                          <Calendar className="w-3 h-3 text-slate-400" aria-hidden="true" />
                           Due Day {com.dueDay} of 30
                         </span>
                         {com.isRecurring && (
@@ -253,14 +259,14 @@ export const CommitmentsManager: React.FC<CommitmentsManagerProps> = ({
                     <div className="text-[11px] font-mono">
                       {isOverdue ? (
                         <span className="text-rose-400 flex items-center gap-1 font-semibold">
-                          <AlertCircle className="w-3 h-3" /> Due date passed
+                          <AlertCircle className="w-3 h-3" aria-hidden="true" /> Due date passed
                         </span>
                       ) : isDueSoon ? (
                         <span className="text-amber-300 font-semibold">
                           Due in {com.dueDay - currentDay} days
                         </span>
                       ) : (
-                        <span className="text-slate-500">
+                        <span className="text-slate-400">
                           Due in {com.dueDay - currentDay} days
                         </span>
                       )}
@@ -270,15 +276,17 @@ export const CommitmentsManager: React.FC<CommitmentsManagerProps> = ({
                       <button
                         onClick={() => onDeleteCommitment(com.id)}
                         title="Remove Commitment"
-                        className="p-1.5 text-slate-500 hover:text-rose-400 transition-colors rounded"
+                        aria-label={`Remove commitment: ${com.title}`}
+                        className="p-1.5 text-slate-400 hover:text-rose-400 focus-visible:ring-2 focus-visible:ring-lime-400 focus-visible:outline-none transition-colors rounded min-h-[36px] min-w-[36px] flex items-center justify-center"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
                       </button>
                       <button
                         onClick={() => onMarkAsPaid(com.id)}
-                        className="px-3 py-1 text-xs font-semibold text-slate-950 bg-amber-400 hover:bg-amber-300 active:bg-amber-500 rounded-md transition-colors inline-flex items-center gap-1.5"
+                        aria-label={`Mark ${com.title} as paid`}
+                        className="px-3 py-1.5 min-h-[36px] text-xs font-semibold text-slate-950 bg-amber-400 hover:bg-amber-300 active:bg-amber-500 rounded-md transition-colors inline-flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-lime-400 focus-visible:outline-none"
                       >
-                        <CheckCircle className="w-3.5 h-3.5" />
+                        <CheckCircle className="w-3.5 h-3.5" aria-hidden="true" />
                         <span>Mark Paid</span>
                       </button>
                     </div>

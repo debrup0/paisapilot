@@ -205,27 +205,29 @@ export const DecisionSimulator: React.FC<DecisionSimulatorProps> = ({
 
         <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
           <div className="sm:col-span-5">
-            <label className="block text-[11px] font-medium text-slate-400 mb-1">
+            <label htmlFor="sim-expense-title" className="block text-[11px] font-medium text-slate-300 mb-1">
               Expense Title / Description
             </label>
             <input
+              id="sim-expense-title"
               type="text"
               placeholder="e.g., Zomato dinner, New earbuds, Doctor visit"
               value={customTitle}
               onChange={(e) =>
                 handleFormChange(e.target.value, customAmount, customCategory, customRecurring)
               }
-              className="w-full bg-slate-950 border border-slate-800 focus:border-lime-400 focus:outline-none rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600"
+              className="w-full bg-slate-950 border border-slate-800 focus:border-lime-400 focus-visible:ring-2 focus-visible:ring-lime-400 focus-visible:outline-none rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500"
             />
           </div>
 
           <div className="sm:col-span-3">
-            <label className="block text-[11px] font-medium text-slate-400 mb-1">
+            <label htmlFor="sim-expense-amount" className="block text-[11px] font-medium text-slate-300 mb-1">
               Amount (₹ INR)
             </label>
             <div className="relative">
-              <span className="absolute left-3 top-2 text-sm text-slate-500 font-mono">₹</span>
+              <span className="absolute left-3 top-2 text-sm text-slate-400 font-mono" aria-hidden="true">₹</span>
               <input
+                id="sim-expense-amount"
                 type="number"
                 min="1"
                 step="10"
@@ -234,16 +236,17 @@ export const DecisionSimulator: React.FC<DecisionSimulatorProps> = ({
                 onChange={(e) =>
                   handleFormChange(customTitle, e.target.value, customCategory, customRecurring)
                 }
-                className="w-full bg-slate-950 border border-slate-800 focus:border-lime-400 focus:outline-none rounded-lg pl-7 pr-3 py-2 text-sm text-white font-mono tabular-nums placeholder-slate-600"
+                className="w-full bg-slate-950 border border-slate-800 focus:border-lime-400 focus-visible:ring-2 focus-visible:ring-lime-400 focus-visible:outline-none rounded-lg pl-7 pr-3 py-2 text-sm text-white font-mono tabular-nums placeholder-slate-500"
               />
             </div>
           </div>
 
           <div className="sm:col-span-4">
-            <label className="block text-[11px] font-medium text-slate-400 mb-1">
+            <label htmlFor="sim-expense-category" className="block text-[11px] font-medium text-slate-300 mb-1">
               Category
             </label>
             <select
+              id="sim-expense-category"
               value={customCategory}
               onChange={(e) =>
                 handleFormChange(
@@ -253,7 +256,7 @@ export const DecisionSimulator: React.FC<DecisionSimulatorProps> = ({
                   customRecurring
                 )
               }
-              className="w-full bg-slate-950 border border-slate-800 focus:border-lime-400 focus:outline-none rounded-lg px-3 py-2 text-sm text-white"
+              className="w-full bg-slate-950 border border-slate-800 focus:border-lime-400 focus-visible:ring-2 focus-visible:ring-lime-400 focus-visible:outline-none rounded-lg px-3 py-2 text-sm text-white"
             >
               {Object.values(CATEGORIES).map((cat) => (
                 <option key={cat.id} value={cat.id}>
@@ -265,14 +268,15 @@ export const DecisionSimulator: React.FC<DecisionSimulatorProps> = ({
         </div>
 
         <div className="flex items-center justify-between pt-1">
-          <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-400">
+          <label htmlFor="sim-expense-recurring" className="flex items-center gap-2 cursor-pointer text-xs text-slate-300">
             <input
+              id="sim-expense-recurring"
               type="checkbox"
               checked={customRecurring}
               onChange={(e) =>
                 handleFormChange(customTitle, customAmount, customCategory, e.target.checked)
               }
-              className="w-4 h-4 rounded border-slate-700 bg-slate-950 text-lime-400 focus:ring-0 focus:ring-offset-0"
+              className="w-4 h-4 rounded border-slate-700 bg-slate-950 text-lime-400 focus:ring-0 focus-visible:ring-2 focus-visible:ring-lime-400"
             />
             <span>This is a recurring monthly commitment</span>
           </label>

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Transaction, FinancialMetrics, SimulationComparison } from '../types/finance';
 import { formatINR } from '../utils/formatters';
-import { TrendingUp, AlertTriangle, Info, ChevronLeft, ChevronRight } from 'lucide-react';
+import { TrendingUp, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface BudgetChartProps {
   transactions: Transaction[];
@@ -19,100 +19,164 @@ export const BudgetChart: React.FC<BudgetChartProps> = ({
   const [hoveredDay, setHoveredDay] = useState<number | null>(null);
   const [chartMode, setChartMode] = useState<'cumulative' | 'daily'>('cumulative');
 
-  // Compute daily spend array from Day 1 to 30
-  const dailySpend: number[] = new Array(31).fill(0);
-  transactions.forEach((tx) => {
-    if (tx.day >= 1 && tx.day <= 30) {
-      if (tx.type === 'expense') {
-        dailySpend[tx.day] += tx.amount;
-      } else if (tx.type === 'refund') {
-        dailySpend[tx.day] -= tx.amount;
+  // Memoize all chart data and SVG paths to avoid expensive recalculations on hover re-renders
+  const {
+    dailySpend,
+    cumulativeSpend,
+    idealPace,
+    projectedSpend,
+    simulatedSpend,
+    isSimulating,
+    idealPath,
+    actualPath,
+    actualArea,
+    projectedPath,
+    simulatedPath,
+    getX,
+    getY,
+    graphWidth,
+    graphHeight,
+    padding,
+    width,
+    height,
+    spentSoFar,
+    maxBudget,
+  } = useMemo(() => {
+    // Compute daily spend array from Day 1 to 30
+    const daily: number[] = new Array(31).fill(0);
+    transactions.forEach((tx) => {
+      if (tx.day >= 1 && tx.day <= 30) {
+        if (tx.type === 'expense') {
+          daily[tx.day] += tx.amount;
+        } else if (tx.type === 'refund') {
+          daily[tx.day] -= tx.amount;
+        }
+      }
+    });
+
+    // Cumulative spend array
+    const cumulative: number[] = new Array(31).fill(0);
+    let running = 0;
+    for (let d = 1; d <= 30; d++) {
+      if (d <= metrics.currentDay) {
+        running += daily[d];
+        cumulative[d] = running;
       }
     }
-  });
 
-  // Cumulative spend array
-  const cumulativeSpend: number[] = new Array(31).fill(0);
-  let running = 0;
-  for (let d = 1; d <= 30; d++) {
-    if (d <= metrics.currentDay) {
-      running += dailySpend[d];
-      cumulativeSpend[d] = running;
+    // Ideal pace array: d * (10000 / 30)
+    const ideal: number[] = new Array(31).fill(0);
+    for (let d = 1; d <= 30; d++) {
+      ideal[d] = Math.round((d / 30) * metrics.startingBudget);
     }
-  }
 
-  // Ideal pace array: d * (10000 / 30)
-  const idealPace: number[] = new Array(31).fill(0);
-  for (let d = 1; d <= 30; d++) {
-    idealPace[d] = Math.round((d / 30) * metrics.startingBudget);
-  }
+    // Baseline projected trajectory from currentDay to 30
+    const projected: (number | null)[] = new Array(31).fill(null);
+    const spentCurrent = cumulative[metrics.currentDay] || 0;
+    const daysRemaining = Math.max(1, 30 - metrics.currentDay);
+    const projectedExtra = metrics.projectedMonthEndSpend - spentCurrent;
 
-  // Baseline projected trajectory from currentDay to 30
-  const projectedSpend: (number | null)[] = new Array(31).fill(null);
-  const spentSoFar = cumulativeSpend[metrics.currentDay] || 0;
-  const daysRemaining = Math.max(1, 30 - metrics.currentDay);
-  const projectedExtra = metrics.projectedMonthEndSpend - spentSoFar;
-  
-  for (let d = metrics.currentDay; d <= 30; d++) {
-    const fraction = (d - metrics.currentDay) / (daysRemaining || 1);
-    projectedSpend[d] = Math.round(spentSoFar + fraction * projectedExtra);
-  }
-
-  // Simulated trajectory if active
-  const simulatedSpend: (number | null)[] = new Array(31).fill(null);
-  const isSimulating = !!(simulationComparison && simulationComparison.projected.totalSpent !== metrics.totalSpent);
-  
-  if (isSimulating && simulationComparison) {
-    const simSpentSoFar = spentSoFar + (simulationComparison.projected.totalSpent - metrics.totalSpent);
-    const simMonthEnd = simulationComparison.projected.projectedMonthEndSpend;
-    const simExtra = simMonthEnd - simSpentSoFar;
     for (let d = metrics.currentDay; d <= 30; d++) {
       const fraction = (d - metrics.currentDay) / (daysRemaining || 1);
-      simulatedSpend[d] = Math.round(simSpentSoFar + fraction * simExtra);
+      projected[d] = Math.round(spentCurrent + fraction * projectedExtra);
     }
-  }
 
-  // SVG dimensions
-  const width = 800;
-  const height = 300;
-  const padding = { top: 20, right: 30, bottom: 40, left: 55 };
-  const graphWidth = width - padding.left - padding.right;
-  const graphHeight = height - padding.top - padding.bottom;
-  const maxBudget = 11000; // room for ₹10k limit
+    // Simulated trajectory if active
+    const simulated: (number | null)[] = new Array(31).fill(null);
+    const activeSimulation = Boolean(
+      simulationComparison &&
+        simulationComparison.projected.totalSpent !== metrics.totalSpent
+    );
 
-  const getX = (day: number) => padding.left + ((day - 1) / 29) * graphWidth;
-  const getY = (val: number) => padding.top + graphHeight - (Math.min(val, maxBudget) / maxBudget) * graphHeight;
+    if (activeSimulation && simulationComparison) {
+      const simSpentSoFar =
+        spentCurrent +
+        (simulationComparison.projected.totalSpent - metrics.totalSpent);
+      const simMonthEnd = simulationComparison.projected.projectedMonthEndSpend;
+      const simExtra = simMonthEnd - simSpentSoFar;
+      for (let d = metrics.currentDay; d <= 30; d++) {
+        const fraction = (d - metrics.currentDay) / (daysRemaining || 1);
+        simulated[d] = Math.round(simSpentSoFar + fraction * simExtra);
+      }
+    }
 
-  // Paths
-  // 1. Ideal line
-  const idealPoints = Array.from({ length: 30 }, (_, i) => i + 1)
-    .map((d) => `${getX(d)},${getY(idealPace[d])}`)
-    .join(' L ');
-  const idealPath = `M ${getX(1)},${getY(idealPace[1])} L ${idealPoints}`;
+    // SVG dimensions
+    const w = 800;
+    const h = 300;
+    const pad = { top: 20, right: 30, bottom: 40, left: 55 };
+    const gWidth = w - pad.left - pad.right;
+    const gHeight = h - pad.top - pad.bottom;
+    const maxBudget = 11000;
 
-  // 2. Actual line
-  const actualPoints = Array.from({ length: metrics.currentDay }, (_, i) => i + 1)
-    .map((d) => `${getX(d)},${getY(cumulativeSpend[d])}`)
-    .join(' L ');
-  const actualPath = `M ${getX(1)},${getY(cumulativeSpend[1])} L ${actualPoints}`;
+    const calcX = (day: number) => pad.left + ((day - 1) / 29) * gWidth;
+    const calcY = (val: number) =>
+      pad.top + gHeight - (Math.min(val, maxBudget) / maxBudget) * gHeight;
 
-  // 2b. Actual Area fill
-  const actualArea = `M ${getX(1)},${getY(0)} L ${actualPoints} L ${getX(metrics.currentDay)},${getY(0)} Z`;
-
-  // 3. Projected line
-  const projectedPoints = Array.from({ length: 30 - metrics.currentDay + 1 }, (_, i) => metrics.currentDay + i)
-    .map((d) => `${getX(d)},${getY(projectedSpend[d] || 0)}`)
-    .join(' L ');
-  const projectedPath = `M ${getX(metrics.currentDay)},${getY(spentSoFar)} L ${projectedPoints}`;
-
-  // 4. Simulated line
-  let simulatedPath = '';
-  if (isSimulating && simulationComparison) {
-    const simPoints = Array.from({ length: 30 - metrics.currentDay + 1 }, (_, i) => metrics.currentDay + i)
-      .map((d) => `${getX(d)},${getY(simulatedSpend[d] || 0)}`)
+    // Paths
+    const idealPts = Array.from({ length: 30 }, (_, i) => i + 1)
+      .map((d) => `${calcX(d)},${calcY(ideal[d])}`)
       .join(' L ');
-    simulatedPath = `M ${getX(metrics.currentDay)},${getY(simulatedSpend[metrics.currentDay] || 0)} L ${simPoints}`;
-  }
+    const iPath = `M ${calcX(1)},${calcY(ideal[1])} L ${idealPts}`;
+
+    const actualPts = Array.from({ length: metrics.currentDay }, (_, i) => i + 1)
+      .map((d) => `${calcX(d)},${calcY(cumulative[d])}`)
+      .join(' L ');
+    const aPath = `M ${calcX(1)},${calcY(cumulative[1])} L ${actualPts}`;
+    const aArea = `M ${calcX(1)},${calcY(0)} L ${actualPts} L ${calcX(
+      metrics.currentDay
+    )},${calcY(0)} Z`;
+
+    const projPts = Array.from(
+      { length: 30 - metrics.currentDay + 1 },
+      (_, i) => metrics.currentDay + i
+    )
+      .map((d) => `${calcX(d)},${calcY(projected[d] || 0)}`)
+      .join(' L ');
+    const pPath = `M ${calcX(metrics.currentDay)},${calcY(spentCurrent)} L ${projPts}`;
+
+    let sPath = '';
+    if (activeSimulation && simulationComparison) {
+      const simPts = Array.from(
+        { length: 30 - metrics.currentDay + 1 },
+        (_, i) => metrics.currentDay + i
+      )
+        .map((d) => `${calcX(d)},${calcY(simulated[d] || 0)}`)
+        .join(' L ');
+      sPath = `M ${calcX(metrics.currentDay)},${calcY(
+        simulated[metrics.currentDay] || 0
+      )} L ${simPts}`;
+    }
+
+    return {
+      dailySpend: daily,
+      cumulativeSpend: cumulative,
+      idealPace: ideal,
+      projectedSpend: projected,
+      simulatedSpend: simulated,
+      isSimulating: activeSimulation,
+      idealPath: iPath,
+      actualPath: aPath,
+      actualArea: aArea,
+      projectedPath: pPath,
+      simulatedPath: sPath,
+      getX: calcX,
+      getY: calcY,
+      graphWidth: gWidth,
+      graphHeight: gHeight,
+      padding: pad,
+      width: w,
+      height: h,
+      spentSoFar: spentCurrent,
+      maxBudget,
+    };
+  }, [
+    transactions,
+    metrics.currentDay,
+    metrics.startingBudget,
+    metrics.projectedMonthEndSpend,
+    metrics.totalSpent,
+    simulationComparison,
+  ]);
 
   // Active hover info
   const inspectDay = hoveredDay !== null ? hoveredDay : metrics.currentDay;
@@ -195,6 +259,8 @@ export const BudgetChart: React.FC<BudgetChartProps> = ({
       {/* SVG Chart */}
       <div className="relative overflow-x-auto">
         <svg
+          role="img"
+          aria-label="30-day budget spending trajectory interactive chart"
           viewBox={`0 0 ${width} ${height}`}
           className="w-full h-auto select-none overflow-visible"
         >
@@ -225,7 +291,7 @@ export const BudgetChart: React.FC<BudgetChartProps> = ({
                 x={padding.left - 8}
                 y={getY(val) + 4}
                 textAnchor="end"
-                className="text-[10px] fill-slate-500 font-mono"
+                className="text-[10px] fill-slate-400 font-mono font-medium"
               >
                 ₹{val >= 1000 ? `${val / 1000}k` : val}
               </text>
@@ -353,19 +419,30 @@ export const BudgetChart: React.FC<BudgetChartProps> = ({
             })
           )}
 
-          {/* Interactive invisible hover rectangles for each day */}
+          {/* Interactive invisible hover & keyboard rectangles for each day */}
           {Array.from({ length: 30 }, (_, i) => i + 1).map((d) => (
             <rect
               key={`hit-${d}`}
+              tabIndex={0}
+              role="button"
+              aria-label={`Inspect Day ${d} budget trajectory`}
               x={getX(d) - graphWidth / 58}
               y={padding.top}
               width={graphWidth / 29}
               height={graphHeight}
               fill="transparent"
-              className="cursor-pointer"
+              className="cursor-pointer outline-none focus:stroke-lime-400 focus:stroke-1"
               onMouseEnter={() => setHoveredDay(d)}
               onMouseLeave={() => setHoveredDay(null)}
+              onFocus={() => setHoveredDay(d)}
+              onBlur={() => setHoveredDay(null)}
               onClick={() => onSetCurrentDay(d)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onSetCurrentDay(d);
+                }
+              }}
             />
           ))}
 

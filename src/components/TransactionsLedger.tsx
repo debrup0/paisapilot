@@ -1,12 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Transaction, CategoryId, TransactionType } from '../types/finance';
 import { CATEGORIES, formatINR } from '../utils/formatters';
 import {
   Search,
-  Filter,
   Plus,
   Trash2,
-  Calendar,
   Receipt,
   ArrowDownLeft,
   ArrowUpRight,
@@ -38,20 +36,30 @@ export const TransactionsLedger: React.FC<TransactionsLedgerProps> = ({
   const [txType, setTxType] = useState<TransactionType>('expense');
   const [notes, setNotes] = useState('');
 
-  const filteredTransactions = transactions
-    .filter((tx) => {
-      if (searchTerm && !tx.title.toLowerCase().includes(searchTerm.toLowerCase())) {
-        return false;
-      }
-      if (selectedCategory !== 'all' && tx.category !== selectedCategory) {
-        return false;
-      }
-      if (selectedType !== 'all' && tx.type !== selectedType) {
-        return false;
-      }
-      return true;
-    })
-    .sort((a, b) => b.day - a.day || new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  // Memoize filtered transactions to avoid recalculations on every render
+  const filteredTransactions = useMemo(() => {
+    return transactions
+      .filter((tx) => {
+        if (
+          searchTerm &&
+          !tx.title.toLowerCase().includes(searchTerm.toLowerCase())
+        ) {
+          return false;
+        }
+        if (selectedCategory !== 'all' && tx.category !== selectedCategory) {
+          return false;
+        }
+        if (selectedType !== 'all' && tx.type !== selectedType) {
+          return false;
+        }
+        return true;
+      })
+      .sort(
+        (a, b) =>
+          b.day - a.day ||
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+  }, [transactions, searchTerm, selectedCategory, selectedType]);
 
   const handleCreateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -217,13 +225,14 @@ export const TransactionsLedger: React.FC<TransactionsLedgerProps> = ({
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         {/* Search Input */}
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-500" />
+          <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" aria-hidden="true" />
           <input
             type="text"
             placeholder="Search by title..."
+            aria-label="Search transactions by title"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-slate-900 border border-slate-800 rounded-lg pl-9 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-lime-400"
+            className="w-full bg-slate-900 border border-slate-800 rounded-lg pl-9 pr-3 py-1.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-lime-400 focus-visible:ring-2 focus-visible:ring-lime-400"
           />
         </div>
 
@@ -231,8 +240,9 @@ export const TransactionsLedger: React.FC<TransactionsLedgerProps> = ({
         <div className="flex items-center gap-2">
           <select
             value={selectedCategory}
+            aria-label="Filter transactions by category"
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-lime-400"
+            className="bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-lime-400 focus-visible:ring-2 focus-visible:ring-lime-400"
           >
             <option value="all">All Categories</option>
             {Object.values(CATEGORIES).map((c) => (
@@ -244,8 +254,9 @@ export const TransactionsLedger: React.FC<TransactionsLedgerProps> = ({
 
           <select
             value={selectedType}
+            aria-label="Filter transactions by type"
             onChange={(e) => setSelectedType(e.target.value)}
-            className="bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-lime-400"
+            className="bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-lime-400 focus-visible:ring-2 focus-visible:ring-lime-400"
           >
             <option value="all">All Types</option>
             <option value="expense">Expenses Only</option>
@@ -306,7 +317,7 @@ export const TransactionsLedger: React.FC<TransactionsLedgerProps> = ({
                         {tx.notes && (
                           <>
                             <span aria-hidden="true">·</span>
-                            <span className="text-slate-500 truncate max-w-xs">{tx.notes}</span>
+                            <span className="text-slate-400 truncate max-w-xs">{tx.notes}</span>
                           </>
                         )}
                       </div>
@@ -330,9 +341,10 @@ export const TransactionsLedger: React.FC<TransactionsLedgerProps> = ({
                     <button
                       onClick={() => onDeleteTransaction(tx.id)}
                       title="Delete Transaction"
-                      className="p-1.5 text-slate-600 hover:text-rose-400 transition-colors rounded"
+                      aria-label={`Delete transaction: ${tx.title} of ${formatINR(tx.amount)}`}
+                      className="p-1.5 text-slate-400 hover:text-rose-400 focus-visible:ring-2 focus-visible:ring-lime-400 focus-visible:outline-none transition-colors rounded min-h-[36px] min-w-[36px] flex items-center justify-center"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
                     </button>
                   </div>
                 </div>

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SavingsGoal, FinancialMetrics } from '../types/finance';
 import { formatINR } from '../utils/formatters';
-import { PiggyBank, Plus, Target, ArrowDownCircle, ArrowUpCircle, Trash2, Calendar, CheckCircle } from 'lucide-react';
+import { PiggyBank, Plus, ArrowDownCircle, ArrowUpCircle, Trash2, Calendar, CheckCircle } from 'lucide-react';
 
 interface SavingsGoalsManagerProps {
   goals: SavingsGoal[];
@@ -30,6 +30,17 @@ export const SavingsGoalsManager: React.FC<SavingsGoalsManagerProps> = ({
   const [activeActionGoal, setActiveActionGoal] = useState<SavingsGoal | null>(null);
   const [actionType, setActionType] = useState<'deposit' | 'withdraw'>('deposit');
   const [transferAmount, setTransferAmount] = useState('200');
+
+  // Close modal on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && activeActionGoal) {
+        setActiveActionGoal(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeActionGoal]);
 
   const handleCreateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -227,9 +238,10 @@ export const SavingsGoalsManager: React.FC<SavingsGoalsManagerProps> = ({
                   <button
                     onClick={() => onDeleteGoal(goal.id)}
                     title="Delete Goal"
-                    className="p-1 text-slate-500 hover:text-rose-400 transition-colors"
+                    aria-label={`Delete savings goal: ${goal.title}`}
+                    className="p-1.5 text-slate-400 hover:text-rose-400 focus-visible:ring-2 focus-visible:ring-lime-400 focus-visible:outline-none transition-colors rounded min-h-[36px] min-w-[36px] flex items-center justify-center"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-4 h-4" aria-hidden="true" />
                   </button>
                 </div>
 
@@ -310,12 +322,20 @@ export const SavingsGoalsManager: React.FC<SavingsGoalsManagerProps> = ({
 
       {/* Transfer Modal Dialog */}
       {activeActionGoal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="transfer-modal-title"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setActiveActionGoal(null);
+          }}
+          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl">
-            <h4 className="text-base font-bold text-white tracking-tight">
+            <h4 id="transfer-modal-title" className="text-base font-bold text-white tracking-tight">
               {actionType === 'deposit' ? 'Add Funds to Goal' : 'Withdraw from Goal'}
             </h4>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-300">
               {actionType === 'deposit'
                 ? `Transfer money from your Available Budget into "${activeActionGoal.title}".`
                 : `Return funds from "${activeActionGoal.title}" back to your Available Budget.`}
@@ -323,10 +343,11 @@ export const SavingsGoalsManager: React.FC<SavingsGoalsManagerProps> = ({
 
             <form onSubmit={handleExecuteTransfer} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1">
+                <label htmlFor="transfer-amount-input" className="block text-xs font-medium text-slate-300 mb-1">
                   Amount (₹)
                 </label>
                 <input
+                  id="transfer-amount-input"
                   type="number"
                   required
                   min="1"
@@ -337,9 +358,9 @@ export const SavingsGoalsManager: React.FC<SavingsGoalsManagerProps> = ({
                   }
                   value={transferAmount}
                   onChange={(e) => setTransferAmount(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white font-mono tabular-nums focus:outline-none focus:border-lime-400"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white font-mono tabular-nums focus:outline-none focus:border-lime-400 focus-visible:ring-2 focus-visible:ring-lime-400"
                 />
-                <div className="text-[11px] text-slate-500 mt-1 font-mono">
+                <div className="text-[11px] text-slate-400 mt-1 font-mono">
                   {actionType === 'deposit'
                     ? `Max available: ${formatINR(metrics.availableToSpend)}`
                     : `Currently in goal: ${formatINR(activeActionGoal.currentSaved)}`}
@@ -350,13 +371,13 @@ export const SavingsGoalsManager: React.FC<SavingsGoalsManagerProps> = ({
                 <button
                   type="button"
                   onClick={() => setActiveActionGoal(null)}
-                  className="px-3 py-2 text-xs font-medium text-slate-400 hover:text-white"
+                  className="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white rounded focus-visible:ring-2 focus-visible:ring-lime-400 focus-visible:outline-none"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-xs font-bold text-slate-950 bg-lime-400 hover:bg-lime-300 rounded-lg transition-colors"
+                  className="px-4 py-2 text-xs font-bold text-slate-950 bg-lime-400 hover:bg-lime-300 rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-lime-400 focus-visible:outline-none"
                 >
                   Confirm Transfer
                 </button>

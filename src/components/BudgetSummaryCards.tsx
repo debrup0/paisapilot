@@ -181,12 +181,12 @@ export const BudgetSummaryCards: React.FC<BudgetSummaryCardsProps> = ({
         <div className="rounded-xl bg-slate-900/60 border border-slate-800/80 p-4">
           <div className="text-xs text-slate-400 flex items-center justify-between">
             <span>Remaining Balance</span>
-            <Wallet className="w-3.5 h-3.5 text-slate-500" />
+            <Wallet className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
           </div>
           <div className="text-xl font-bold text-white mt-2 font-mono tabular-nums">
             {formatINR(metrics.remainingBalance)}
           </div>
-          <div className="text-[11px] text-slate-500 mt-1">
+          <div className="text-[11px] text-slate-400 mt-1">
             Total ₹10k minus ₹{metrics.totalSpent} spent
           </div>
         </div>
@@ -200,40 +200,50 @@ export const BudgetSummaryCards: React.FC<BudgetSummaryCardsProps> = ({
           <div className="text-xl font-bold text-rose-400 mt-2 font-mono tabular-nums">
             {formatINR(metrics.totalSpent)}
           </div>
-          <div className="text-[11px] text-slate-500 mt-1">
+          <div className="text-[11px] text-slate-400 mt-1">
             Across 30-day budget period
           </div>
         </div>
 
-        {/* Committed Bills */}
-        <div className="rounded-xl bg-slate-900/60 border border-slate-800/80 p-4 cursor-pointer hover:border-slate-700 transition-colors" onClick={onNavigateToCommitments}>
+        {/* Committed Bills (Semantic Button) */}
+        <button
+          type="button"
+          onClick={onNavigateToCommitments}
+          aria-label={`Committed Dues: ${formatINR(metrics.committedUpcoming)}. Click to manage bills.`}
+          className="text-left rounded-xl bg-slate-900/60 border border-slate-800/80 p-4 hover:border-slate-700 transition-colors focus-visible:ring-2 focus-visible:ring-lime-400 focus-visible:outline-none"
+        >
           <div className="text-xs text-slate-400 flex items-center justify-between">
             <span>Committed Dues</span>
-            <Layers className="w-3.5 h-3.5 text-amber-400" />
+            <Layers className="w-3.5 h-3.5 text-amber-400" aria-hidden="true" />
           </div>
           <div className="text-xl font-bold text-amber-400 mt-2 font-mono tabular-nums">
             {formatINR(metrics.committedUpcoming)}
           </div>
-          <div className="text-[11px] text-slate-500 mt-1 flex items-center justify-between">
+          <div className="text-[11px] text-slate-400 mt-1 flex items-center justify-between">
             <span>Reserved for bills</span>
-            <span className="text-slate-400 hover:text-white">View &rarr;</span>
+            <span className="text-slate-300 hover:text-white font-medium">View &rarr;</span>
           </div>
-        </div>
+        </button>
 
-        {/* Savings Allocated */}
-        <div className="rounded-xl bg-slate-900/60 border border-slate-800/80 p-4 cursor-pointer hover:border-slate-700 transition-colors" onClick={onNavigateToGoals}>
+        {/* Savings Allocated (Semantic Button) */}
+        <button
+          type="button"
+          onClick={onNavigateToGoals}
+          aria-label={`Savings Reserved: ${formatINR(metrics.totalSavingsAllocated)}. Click to manage goals.`}
+          className="text-left rounded-xl bg-slate-900/60 border border-slate-800/80 p-4 hover:border-slate-700 transition-colors focus-visible:ring-2 focus-visible:ring-lime-400 focus-visible:outline-none"
+        >
           <div className="text-xs text-slate-400 flex items-center justify-between">
             <span>Savings Reserved</span>
-            <PiggyBank className="w-3.5 h-3.5 text-emerald-400" />
+            <PiggyBank className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
           </div>
           <div className="text-xl font-bold text-emerald-400 mt-2 font-mono tabular-nums">
             {formatINR(metrics.totalSavingsAllocated)}
           </div>
-          <div className="text-[11px] text-slate-500 mt-1 flex items-center justify-between">
+          <div className="text-[11px] text-slate-400 mt-1 flex items-center justify-between">
             <span>Protected for goals</span>
-            <span className="text-slate-400 hover:text-white">View &rarr;</span>
+            <span className="text-slate-300 hover:text-white font-medium">View &rarr;</span>
           </div>
-        </div>
+        </button>
       </div>
     </div>
   );

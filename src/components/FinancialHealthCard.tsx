@@ -84,7 +84,7 @@ export const FinancialHealthCard: React.FC<FinancialHealthCardProps> = ({ metric
               <span className="text-4xl font-extrabold text-white tracking-tight">
                 {metrics.healthScore}
               </span>
-              <span className="text-xs text-slate-500 block">/ 100</span>
+              <span className="text-xs text-slate-400 block">/ 100</span>
             </div>
           </div>
 
@@ -114,12 +114,19 @@ export const FinancialHealthCard: React.FC<FinancialHealthCardProps> = ({ metric
                 >
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-medium text-slate-200">{factor.name}</span>
-                    <span className="font-mono text-slate-400 font-semibold">
+                    <span className="font-mono text-slate-300 font-semibold">
                       {factor.score} / {factor.maxScore} pts
                     </span>
                   </div>
 
-                  <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                  <div
+                    role="progressbar"
+                    aria-valuenow={factor.score}
+                    aria-valuemin={0}
+                    aria-valuemax={factor.maxScore}
+                    aria-label={factor.name}
+                    className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden"
+                  >
                     <div
                       style={{ width: `${pct}%` }}
                       className={`h-full transition-all duration-300 ${

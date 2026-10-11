@@ -133,7 +133,8 @@ export const EmergencySimulator: React.FC<EmergencySimulatorProps> = ({
             <button
               key={preset.title}
               onClick={() => handleApplyPreset(idx)}
-              className={`p-3.5 rounded-xl border text-left transition-all ${
+              aria-label={`Test emergency scenario: ${preset.title} of ${formatINR(preset.amount)}`}
+              className={`p-3.5 rounded-xl border text-left transition-all focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:outline-none ${
                 isSelected
                   ? 'bg-rose-500/20 border-rose-400 text-white shadow-lg'
                   : 'bg-slate-950/60 border-slate-800/80 hover:border-slate-700 text-slate-300'
@@ -143,7 +144,7 @@ export const EmergencySimulator: React.FC<EmergencySimulatorProps> = ({
                 <span className="text-xs font-bold text-rose-400 font-mono">
                   {formatINR(preset.amount)}
                 </span>
-                <AlertTriangle className="w-3.5 h-3.5 text-rose-400/80" />
+                <AlertTriangle className="w-3.5 h-3.5 text-rose-400/80" aria-hidden="true" />
               </div>
               <h4 className="text-xs font-semibold text-white mt-1.5 line-clamp-1">
                 {preset.title}
@@ -161,24 +162,26 @@ export const EmergencySimulator: React.FC<EmergencySimulatorProps> = ({
         <input
           type="text"
           placeholder="Emergency title (e.g. Lost metro pass)"
+          aria-label="Emergency title"
           value={customTitle}
           onChange={(e) => setCustomTitle(e.target.value)}
-          className="w-full sm:flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-400"
+          className="w-full sm:flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-rose-400 focus-visible:ring-2 focus-visible:ring-rose-400"
         />
         <div className="w-full sm:w-40 relative">
-          <span className="absolute left-3 top-2 text-xs text-slate-500 font-mono">₹</span>
+          <span className="absolute left-3 top-2 text-xs text-slate-400 font-mono" aria-hidden="true">₹</span>
           <input
             type="number"
             placeholder="Amount"
+            aria-label="Emergency amount in rupees"
             min="1"
             value={customAmount}
             onChange={(e) => setCustomAmount(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-7 pr-3 py-2 text-xs text-white font-mono tabular-nums focus:outline-none focus:border-rose-400"
+            className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-7 pr-3 py-2 text-xs text-white font-mono tabular-nums placeholder-slate-400 focus:outline-none focus:border-rose-400 focus-visible:ring-2 focus-visible:ring-rose-400"
           />
         </div>
         <button
           type="submit"
-          className="w-full sm:w-auto px-4 py-2 text-xs font-semibold text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors whitespace-nowrap"
+          className="w-full sm:w-auto px-4 py-2 text-xs font-semibold text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors whitespace-nowrap focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:outline-none"
         >
           Test Custom Shock
         </button>

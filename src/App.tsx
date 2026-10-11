@@ -126,21 +126,29 @@ export default function App() {
     }
   }, [currentDay]);
 
-  // Pure financial calculations
-  const metrics = calculateFinancialMetrics(
-    transactions,
-    commitments,
-    savingsGoals,
-    currentDay,
-    STARTING_BUDGET
+  // Pure financial calculations memoized to avoid recomputing on unrelated re-renders
+  const metrics = React.useMemo(
+    () =>
+      calculateFinancialMetrics(
+        transactions,
+        commitments,
+        savingsGoals,
+        currentDay,
+        STARTING_BUDGET
+      ),
+    [transactions, commitments, savingsGoals, currentDay]
   );
 
-  const simulationComparison = simulateDecision(
-    metrics,
-    transactions,
-    commitments,
-    savingsGoals,
-    simulationProposal
+  const simulationComparison = React.useMemo(
+    () =>
+      simulateDecision(
+        metrics,
+        transactions,
+        commitments,
+        savingsGoals,
+        simulationProposal
+      ),
+    [metrics, transactions, commitments, savingsGoals, simulationProposal]
   );
 
   // Auto-dismiss toast
@@ -376,16 +384,21 @@ export default function App() {
 
       {/* Toast Feedback Notification */}
       {toastMessage && (
-        <div className="fixed bottom-5 right-5 z-50 flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 shadow-2xl text-xs text-white animate-in slide-in-from-bottom-2">
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed bottom-5 right-5 z-50 flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 shadow-2xl text-xs text-white animate-in slide-in-from-bottom-2"
+        >
           {toastMessage.type === 'success' ? (
-            <CheckCircle2 className="w-4 h-4 text-lime-400 shrink-0" />
+            <CheckCircle2 className="w-4 h-4 text-lime-400 shrink-0" aria-hidden="true" />
           ) : (
-            <AlertCircle className="w-4 h-4 text-sky-400 shrink-0" />
+            <AlertCircle className="w-4 h-4 text-sky-400 shrink-0" aria-hidden="true" />
           )}
           <span>{toastMessage.text}</span>
           <button
             onClick={() => setToastMessage(null)}
-            className="text-slate-400 hover:text-white ml-2"
+            aria-label="Dismiss notification"
+            className="text-slate-400 hover:text-white ml-2 p-1 rounded focus-visible:ring-2 focus-visible:ring-lime-400 focus-visible:outline-none"
           >
             <X className="w-3.5 h-3.5" />
           </button>
