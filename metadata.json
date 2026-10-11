@@ -2,5 +2,7 @@
   "name": "PaisaPilot",
   "description": "Smart 30-day budget tracker and financial decision simulator for Gen Z managing ₹10,000 monthly budgets in India.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }
